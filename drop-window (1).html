@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Drop Window</title>
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Mono:wght@400;500&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: bright stage hero lit by three spotlights, closing-soon rail, FUT-style tiered cards in a grid, bottom tabs on phones, item sheet slides up.
+   Skins: daylight (default, bare :root), classic (original light), midnight (original dark). The viewer picks one in the header; the choice is remembered. */
+:root {
+  --bg: #EDF5FC;
+  --surface: #FFFFFF;
+  --surface-2: #E2EEFA;
+  --ink: #0F2547;
+  --ink-2: #4A6285;
+  --line: #CFE0F1;
+  --accent: #2B5FD9;
+  --on-accent: #FFFFFF;
+  --pop: #FF7A3D;
+  --on-pop: #2B0F00;
+  --sun: #FFB81F;
+  --win: #066F5B;
+  --win-bg: #D6F3EA;
+  --warn: #8A5200;
+  --warn-bg: #FFEBC4;
+  --lose: #C42848;
+  --lose-bg: #FFE0E6;
+  --scrim: rgba(12, 30, 66, .5);
+  --shadow: 0 1px 2px rgba(30, 80, 160, .06), 0 10px 28px rgba(40, 95, 190, .13);
+  --demo-bg: #DCEAFB;
+  --demo-ink: #0F2547;
+  --panel-core: #FFFFFF;
+  --panel-edge: #D5E6F8;
+  --panel-mix-a: 8%;
+  --panel-mix-b: 26%;
+  --deco: radial-gradient(60% 40% at 0% 0%, rgba(255, 255, 255, .9), rgba(255, 255, 255, 0) 70%), repeating-conic-gradient(from 90deg at -4% -6%, rgba(112, 184, 238, .17) 0deg 5deg, rgba(255, 255, 255, 0) 5deg 11deg);
+  --hero-bg: radial-gradient(95% 52% at 50% 112%, #FFFFFF 0 34%, rgba(255, 255, 255, 0) 74%), linear-gradient(176deg, #8DB2EE 0%, #B2CEF4 55%, #DDEAFB 100%);
+  --hero-ink: #0F2547;
+  --hero-ring: rgba(255, 255, 255, 0);
+  --hero-curves: radial-gradient(circle at 100% 0%, transparent 0 170px, rgba(60, 196, 208, .34) 170px 186px, transparent 186px),
+    radial-gradient(circle at 100% 0%, transparent 0 226px, rgba(255, 255, 255, .6) 226px 236px, transparent 236px),
+    radial-gradient(circle at 100% 0%, transparent 0 282px, rgba(43, 95, 217, .26) 282px 302px, transparent 302px);
+  --lamp-display: block;
+  --fan-mobile: block;
+  --dial-bg: #1F4FC2;
+  --dial-ink: #FFFFFF;
+  --dial-label: #CFE0FF;
+  --hero-btn-bg: #2B5FD9;
+  --hero-btn-ink: #FFFFFF;
+  --mini-base: #FFFFFF;
+  --mini-mix: 20%;
+  --mini-shadow: rgba(20, 60, 140, .26);
+  --win-grad: radial-gradient(circle at 50% 28%, #8BE6DA 0, #3F78E6 46%, #15328F 100%);
+  --win-btn-ink: #12306F;
+  --f-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (min-width: 760px) {
+  :root { --hero-bg: radial-gradient(62% 85% at 80% 108%, #FFFFFF 0 30%, rgba(255, 255, 255, 0) 74%), linear-gradient(118deg, #8DB2EE 0%, #B3CFF4 48%, #DDEAFB 100%); }
+}
+@media (max-width: 559px) {
+  :root { --hero-curves: radial-gradient(circle at 106% 100%, transparent 0 96px, rgba(60, 196, 208, .36) 96px 110px, transparent 110px),
+    radial-gradient(circle at 106% 100%, transparent 0 138px, rgba(255, 255, 255, .62) 138px 146px, transparent 146px),
+    radial-gradient(circle at 106% 100%, transparent 0 176px, rgba(43, 95, 217, .26) 176px 194px, transparent 194px); }
+}
+:root[data-skin="classic"] {
+  --bg: #EDF0F6; --surface: #FFFFFF; --surface-2: #E3E8F1; --ink: #0F1729; --ink-2: #4B566D; --line: #D3DAE7;
+  --accent: #D93F0B; --on-accent: #FFFFFF; --pop: var(--accent); --on-pop: var(--on-accent); --sun: #FFB81F;
+  --win: #0B8F63; --win-bg: #DDF5EA; --warn: #9A5600; --warn-bg: #FFEBC8; --lose: #C7263F; --lose-bg: #FDE1E6;
+  --scrim: rgba(8, 13, 30, .55);
+  --shadow: 0 1px 2px rgba(15, 23, 41, .06), 0 8px 24px rgba(15, 23, 41, .07);
+  --demo-bg: var(--ink); --demo-ink: var(--bg);
+  --panel-core: var(--surface-2); --panel-edge: var(--surface-2); --panel-mix-a: 14%; --panel-mix-b: 32%;
+  --deco: none;
+  --hero-bg: linear-gradient(115deg, #FF5A1F 0%, #FF8A2A 52%, #FFC247 100%);
+  --hero-ink: #1A0B02; --hero-ring: rgba(255, 255, 255, .22); --hero-curves: none; --lamp-display: none; --fan-mobile: none;
+  --dial-bg: #1A0B02; --dial-ink: var(--sun); --dial-label: #FFDFA0; --hero-btn-bg: #1A0B02; --hero-btn-ink: #FFFFFF;
+  --mini-base: #FFF4E6; --mini-mix: 30%; --mini-shadow: rgba(26, 11, 2, .28);
+  --win-grad: radial-gradient(circle at 50% 30%, #FF8A2A 0, #D93F0B 45%, #1A0B02 100%); --win-btn-ink: #1A0B02;
+  color-scheme: light;
+}
+:root[data-skin="midnight"] {
+  --bg: #080D1C; --surface: #111933; --surface-2: #1A2447; --ink: #EEF2FB; --ink-2: #A3AECA; --line: #27325A;
+  --accent: #FF6A3A; --on-accent: #1B0800; --pop: var(--accent); --on-pop: var(--on-accent); --sun: #FFB81F;
+  --win: #35D6A0; --win-bg: #0F3A2E; --warn: #FFB938; --warn-bg: #3D2A07; --lose: #FF6B84; --lose-bg: #43121F;
+  --scrim: rgba(2, 5, 14, .7);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px rgba(0, 0, 0, .35);
+  --demo-bg: var(--ink); --demo-ink: var(--bg);
+  --panel-core: var(--surface-2); --panel-edge: var(--surface-2); --panel-mix-a: 14%; --panel-mix-b: 32%;
+  --deco: none;
+  --hero-bg: linear-gradient(115deg, #FF5A1F 0%, #FF8A2A 52%, #FFC247 100%);
+  --hero-ink: #1A0B02; --hero-ring: rgba(255, 255, 255, .22); --hero-curves: none; --lamp-display: none; --fan-mobile: none;
+  --dial-bg: #1A0B02; --dial-ink: var(--sun); --dial-label: #FFDFA0; --hero-btn-bg: #1A0B02; --hero-btn-ink: #FFFFFF;
+  --mini-base: #FFF4E6; --mini-mix: 30%; --mini-shadow: rgba(26, 11, 2, .28);
+  --win-grad: radial-gradient(circle at 50% 30%, #FF8A2A 0, #D93F0B 45%, #1A0B02 100%); --win-btn-ink: #1A0B02;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { position: relative; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: var(--deco); -webkit-mask-image: radial-gradient(120% 90% at 0 0, #000 0, transparent 78%); mask-image: radial-gradient(120% 90% at 0 0, #000 0, transparent 78%); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+h1, h2, h3, p { margin: 0; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.wrap { max-width: 1180px; margin-inline: auto; padding-inline: 16px; }
+
+/* demo strip */
+.demo { background: var(--demo-bg); color: var(--demo-ink); font-size: 12.5px; padding: 7px 16px; text-align: center; }
+.demo b { background: var(--sun); color: #1A0B02; border-radius: 999px; padding: 1px 8px; margin-right: 6px; font-weight: 700; }
+.demo .link { background: none; border: 0; color: inherit; text-decoration: underline; padding: 0; margin-left: 6px; }
+
+/* header + tabs */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); border-bottom: 1px solid var(--line); }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
+.brand-mark { display: flex; align-items: center; gap: 9px; background: none; border: 0; padding: 0; font-family: var(--f-display); font-weight: 800; font-size: 20px; letter-spacing: -.02em; }
+.brand-mark svg { color: var(--accent); }
+.actions { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.limit { display: grid; gap: 4px; min-width: 128px; }
+.limit em { font-style: normal; }
+.limit span { font-size: 11px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; white-space: nowrap; }
+.limit b { color: var(--ink); font-family: var(--f-mono); font-weight: 500; }
+.meter { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .4s; }
+.icon-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; flex: none; }
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
+.tab { display: grid; justify-items: center; gap: 2px; background: none; border: 0; padding: 6px 4px; font-size: 12px; font-weight: 600; color: var(--ink-2); border-radius: 12px; position: relative; }
+.tab svg { width: 22px; height: 22px; }
+.tab[aria-current="page"] { color: var(--accent); }
+.count { font-style: normal; font-family: var(--f-mono); font-size: 11px; background: var(--accent); color: var(--on-accent); border-radius: 99px; padding: 0 6px; min-width: 18px; text-align: center; line-height: 17px; margin-left: 4px; }
+.count:empty { display: none; }
+.tab .count { position: absolute; top: 2px; left: calc(50% + 8px); margin: 0; }
+.brand-mark, .tab { white-space: nowrap; }
+.brand-mark, .tabs, .actions { flex: none; }
+@media (min-width: 760px) and (max-width: 979px) { .limit { min-width: 100px; } .limit em { display: none; } .tab { padding: 8px 10px; } .bar { gap: 8px; } }
+@media (max-width: 419px) { .limit { min-width: 112px; } .actions { gap: 6px; } }
+@media (max-width: 349px) { .limit { display: none; } .actions { margin-left: auto; } }
+@media (max-width: 399px) { .limit { min-width: 92px; } .limit em { display: none; } .brand-mark { font-size: 18px; gap: 7px; } .brand-mark svg { width: 22px; height: 22px; } }
+@media (min-width: 760px) {
+  .tabs { position: static; display: flex; gap: 4px; border: 0; padding: 0; background: none; }
+  .tab { display: flex; align-items: center; gap: 7px; font-size: 14px; padding: 8px 14px; }
+  .tab svg { width: 18px; height: 18px; }
+  .tab[aria-current="page"] { background: var(--surface-2); color: var(--ink); }
+  .tab .count { position: static; }
+  main.wrap { padding-bottom: 48px; }
+}
+main.wrap { padding-block: 18px 96px; display: grid; gap: 26px; grid-template-columns: minmax(0, 1fr); }
+main.wrap > section { min-width: 0; }
+@media (min-width: 760px) { main.wrap { padding-bottom: 48px; } }
+
+/* hero */
+.hero { position: relative; overflow: hidden; border-radius: 26px; padding: 22px; color: var(--hero-ink); background: var(--hero-bg); display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); box-shadow: var(--shadow); }
+.hero::before { content: ""; position: absolute; right: -90px; top: -90px; width: 420px; height: 420px; border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0 22px, var(--hero-ring) 22px 24px); pointer-events: none; }
+.hero::after { content: ""; position: absolute; inset: 0; background: var(--hero-curves); pointer-events: none; }
+.hero > * { position: relative; }
+.eyebrow { font: 700 12px/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; }
+.hero h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(30px, 6vw, 48px); line-height: 1; letter-spacing: -.03em; text-wrap: balance; margin-top: 10px; }
+.hero p.sub { margin-top: 10px; max-width: 46ch; font-size: 15.5px; }
+.dial { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+.dial div { background: var(--dial-bg); color: var(--dial-ink); border-radius: 14px; padding: 9px 12px 8px; min-width: 62px; text-align: center; }
+.dial b { display: block; font-family: var(--f-mono); font-weight: 500; font-size: 28px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.dial small { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--dial-label); }
+.hero-stats { display: flex; gap: 8px 18px; flex-wrap: wrap; margin-top: 14px; font-size: 13.5px; font-weight: 600; }
+.btn { border: 0; border-radius: 14px; padding: 12px 18px; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-dark { background: var(--hero-btn-bg); color: var(--hero-btn-ink); margin-top: 16px; }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-ghost { background: var(--surface-2); color: var(--ink); }
+.btn-win { background: var(--win); color: #fff; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.fan { position: relative; height: 210px; max-width: 360px; width: 100%; margin-inline: auto; }
+.fan .mini { position: absolute; z-index: 1; bottom: 0; width: 44%; aspect-ratio: 4/5; border-radius: 16px; background: color-mix(in srgb, var(--tint) var(--mini-mix), var(--mini-base)); box-shadow: 0 10px 26px var(--mini-shadow); display: grid; place-items: center; padding: 8px; }
+.fan .lamps { position: absolute; z-index: 0; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; display: var(--lamp-display); }
+.fan .mini:nth-of-type(1) { left: 0; transform: rotate(-9deg); }
+.fan .mini:nth-of-type(2) { left: 28%; z-index: 2; transform: translateY(-14px); }
+.fan .mini:nth-of-type(3) { right: 0; transform: rotate(9deg); }
+.fan .mini svg { width: 100%; height: auto; }
+@media (max-width: 559px) {
+  .hero { padding: 18px; gap: 0; border-radius: 22px; }
+  .hero h1 { font-size: 27px; margin-top: 8px; }
+  .hero p.sub { font-size: 14px; margin-top: 8px; }
+  .dial { margin-top: 14px; gap: 6px; flex-wrap: nowrap; }
+  .dial div { flex: 1; min-width: 0; padding: 7px 4px 6px; }
+  .dial b { font-size: 24px; }
+  .hero-stats { margin-top: 10px; font-size: 13px; }
+  .btn-dark { margin-top: 12px; padding: 10px 16px; }
+  .fan { display: var(--fan-mobile); height: 158px; margin-top: 12px; }
+  .fan .mini { width: 31%; padding: 6px; border-radius: 13px; }
+  .fan .mini:nth-of-type(2) { left: 34.5%; transform: translateY(-8px); }
+  main.wrap { padding-top: 14px; }
+}
+@media (min-width: 560px) and (max-width: 759px) { .fan { height: 190px; } }
+@media (min-width: 760px) { .hero { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; padding: 30px; } .fan { height: 260px; } }
+
+/* section heads + controls */
+.sec { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.sec h2 { font-family: var(--f-display); font-weight: 800; font-size: 22px; letter-spacing: -.02em; display: flex; align-items: center; gap: 9px; }
+.sec small { color: var(--ink-2); font-size: 13px; }
+.live-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lose); box-shadow: 0 0 0 0 var(--lose); animation: ping 1.6s infinite; }
+@keyframes ping { 70% { box-shadow: 0 0 0 9px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+.rail-row { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 8px; margin-inline: -16px; padding-inline: 16px; }
+.rail-row .card { flex: none; width: 206px; scroll-snap-align: start; }
+.controls { display: grid; gap: 10px; margin-bottom: 14px; }
+.search { position: relative; }
+.search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-2); }
+.search input { width: 100%; height: 46px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); padding: 0 14px 0 40px; }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-inline: -16px; padding-inline: 16px; }
+.pill { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 13.5px; }
+.pill[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.pill.drop[aria-pressed="true"] { background: var(--pop); color: var(--on-pop); border-color: var(--pop); }
+.selects { display: flex; gap: 10px; flex-wrap: wrap; }
+.selects label { display: grid; gap: 3px; font-size: 11.5px; color: var(--ink-2); flex: 1 1 140px; min-width: 0; }
+.selects select { height: 42px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); padding: 0 10px; width: 100%; }
+
+/* grid + card */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px; }
+.card { position: relative; background: var(--surface); border-radius: 20px; box-shadow: var(--shadow); display: grid; grid-template-rows: auto 1fr; overflow: hidden; border: 1px solid var(--line); transition: transform .15s, box-shadow .15s; }
+.card:hover { transform: translateY(-3px); }
+.panel { position: relative; aspect-ratio: 1/1; background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--tint) var(--panel-mix-a), var(--panel-core)) 0 38%, color-mix(in srgb, var(--tint) var(--panel-mix-b), var(--panel-edge)) 100%); display: grid; place-items: center; padding: 14px 12px 22px; }
+.panel .art { width: 100%; height: 100%; }
+.tier { position: absolute; left: 10px; top: 10px; display: grid; justify-items: center; padding: 6px 8px 7px; min-width: 42px; border-radius: 10px 10px 18px 18px; font-family: var(--f-display); line-height: 1; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 3px 8px rgba(0, 0, 0, .22); }
+.tier b { font-size: 20px; font-weight: 800; }
+.tier i { font-style: normal; font-size: 10px; font-weight: 800; letter-spacing: .12em; margin-top: 3px; }
+.tier-ds { background: linear-gradient(150deg, #FBE9A0, #E0A91F); color: #3B2A00; }
+.tier-ex { background: linear-gradient(150deg, #C6F3EE, #4FBDB1); color: #042E2B; }
+.tier-gd { background: linear-gradient(150deg, #F7C9A1, #C27A3F); color: #3A1B05; }
+.tier-wn { background: linear-gradient(150deg, #CBD3E2, #8592AB); color: #101830; }
+.watch { position: absolute; right: 10px; top: 10px; z-index: 3; width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink-2); }
+.watch svg { fill: none; stroke: currentColor; }
+.watch[aria-pressed="true"] { color: var(--accent); }
+.watch[aria-pressed="true"] svg { fill: currentColor; }
+.timer { position: absolute; left: 10px; bottom: 10px; display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 4px 9px; font: 500 12.5px/1.2 var(--f-mono); background: var(--surface); color: var(--ink-2); border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.timer.t-warn { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+.timer.t-hot { background: var(--lose-bg); color: var(--lose); border-color: transparent; }
+.timer.t-final { background: var(--lose); color: #fff; border-color: transparent; animation: pulse 1s infinite; }
+.timer .ot { background: currentColor; border-radius: 4px; padding: 0 4px; font-size: 10px; }
+.timer .ot span { color: var(--surface); }
+.timer.t-final .ot span { color: var(--lose); }
+.timer.t-final .ot { background: #fff; }
+.timer.t-done { background: var(--surface-2); }
+@keyframes pulse { 50% { transform: scale(1.06); box-shadow: 0 0 0 5px color-mix(in srgb, var(--lose) 25%, transparent); } }
+.tag-drop { position: absolute; right: 10px; bottom: 10px; background: var(--pop); color: var(--on-pop); font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; border-radius: 999px; padding: 4px 9px; }
+.meta { padding: 12px 13px 14px; display: grid; gap: 3px; align-content: start; }
+.brand { font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-2); }
+.meta h3 { font-size: 15px; line-height: 1.25; font-weight: 600; }
+.open { background: none; border: 0; padding: 0; text-align: left; font-family: var(--f-display); font-weight: 600; font-size: 15.5px; line-height: 1.22; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.open::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.meta .sub { font-size: 12.5px; color: var(--ink-2); }
+.price-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; margin-top: 8px; }
+.lbl { display: block; font-size: 11px; color: var(--ink-2); }
+.amt { font-family: var(--f-display); font-weight: 800; font-size: 21px; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.chip { font-weight: 700; font-size: 12px; padding: 5px 9px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); white-space: nowrap; }
+.chip-win { background: var(--win-bg); color: var(--win); }
+.chip-lose { background: var(--lose-bg); color: var(--lose); }
+.chip-warn { background: var(--warn-bg); color: var(--warn); }
+.chip-accent { background: var(--accent); color: var(--on-accent); }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 20px; padding: 36px 20px; text-align: center; color: var(--ink-2); display: grid; gap: 6px; justify-items: center; }
+.empty h3 { font-family: var(--f-display); font-size: 19px; color: var(--ink); }
+
+/* my bids */
+.summary { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.summary .tile:not(.wide) .v { font-size: 24px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px; display: grid; gap: 6px; align-content: start; }
+.tile.wide { grid-column: 1 / -1; }
+.tile .k { font-size: 12px; color: var(--ink-2); }
+.tile .v { font-family: var(--f-display); font-weight: 800; font-size: 26px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.seg { display: flex; gap: 6px; overflow-x: auto; background: var(--surface-2); padding: 5px; border-radius: 16px; margin-block: 4px 14px; }
+.seg button { flex: 1 0 auto; border: 0; background: none; padding: 9px 12px; border-radius: 12px; font-weight: 700; font-size: 13.5px; color: var(--ink-2); white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.seg .n { font-family: var(--f-mono); font-size: 12px; margin-left: 5px; }
+@media (min-width: 760px) { .summary { grid-template-columns: 2fr 1fr 1fr 1fr; } .tile.wide { grid-column: auto; } }
+
+/* layers: sheet, modal, toast, win */
+#layer > .scrim { position: fixed; inset: 0; z-index: 50; background: var(--scrim); display: flex; align-items: flex-end; justify-content: center; }
+#layer > .scrim.top2 { z-index: 60; align-items: center; padding: 16px; }
+.sheet { background: var(--surface); width: 100%; max-height: 94vh; max-height: 94dvh; overflow: auto; border-radius: 24px 24px 0 0; position: relative; animation: rise .22s ease-out; overscroll-behavior: contain; }
+@keyframes rise { from { transform: translateY(40px); opacity: .4; } }
+.close { position: absolute; right: 12px; top: 12px; z-index: 5; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; }
+.s-grid { display: grid; grid-template-columns: minmax(0, 1fr); }
+.s-art { position: relative; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--tint) var(--panel-mix-a), var(--panel-core)) 0 36%, color-mix(in srgb, var(--tint) var(--panel-mix-b), var(--panel-edge)) 100%); }
+.s-art .art { width: min(100%, 300px); height: auto; }
+.s-art .tier { transform: scale(1.25); transform-origin: top left; left: 16px; top: 16px; }
+.s-body { padding: 18px 16px 0; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.s-body h2 { font-family: var(--f-display); font-weight: 800; font-size: 26px; line-height: 1.08; letter-spacing: -.02em; text-wrap: balance; }
+.facts { display: flex; gap: 6px; flex-wrap: wrap; }
+.banner { border-radius: 16px; padding: 12px 14px; font-weight: 600; font-size: 14px; display: flex; gap: 10px; align-items: center; background: var(--surface-2); }
+.banner.win { background: var(--win-bg); color: var(--win); }
+.banner.lose { background: var(--lose-bg); color: var(--lose); }
+.banner.warn { background: var(--warn-bg); color: var(--warn); }
+.banner strong { font-family: var(--f-display); font-size: 16px; }
+.clock-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.clock-row > div { background: var(--surface-2); border-radius: 16px; padding: 12px 14px; display: grid; gap: 2px; }
+.clock-row .big { font-family: var(--f-mono); font-size: 30px; font-weight: 500; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.clock-row .big.t-warn { color: var(--warn); }
+.clock-row .big.t-hot, .clock-row .big.t-final { color: var(--lose); }
+.clock-row .big.t-final { animation: pulse 1s infinite; }
+.clock-row .price { font-family: var(--f-display); font-weight: 800; font-size: 30px; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.h4 { font: 800 13px/1 var(--f-body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 10px; }
+.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.kv div { background: var(--surface-2); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; }
+.kv small { font-size: 11.5px; color: var(--ink-2); }
+.kv b { font-weight: 700; }
+.seller { display: grid; gap: 12px; background: var(--surface-2); border-radius: 18px; padding: 14px; }
+.seller-top { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--f-display); font-weight: 800; background: var(--accent); color: var(--on-accent); flex: none; }
+.seller-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+.seller-stats b { display: block; font-family: var(--f-display); font-size: 19px; }
+.seller-stats small { color: var(--ink-2); font-size: 11.5px; }
+.hist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.hist li { display: grid; grid-template-columns: minmax(0, 1fr) auto 76px; align-items: baseline; gap: 10px; background: var(--surface-2); border-radius: 12px; padding: 9px 12px; font-size: 14px; }
+.hist li .t { text-align: right; }
+.hist li.me { background: var(--win-bg); color: var(--win); font-weight: 700; }
+.hist li:first-child { outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); }
+.hist .t { color: var(--ink-2); font-size: 12.5px; }
+.hist .me .t { color: inherit; }
+.hist b { font-family: var(--f-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+.bidbar { position: sticky; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); margin-inline: -16px; display: grid; gap: 10px; z-index: 4; }
+.quick { display: flex; gap: 8px; flex-wrap: wrap; }
+.quick button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 12px; font-family: var(--f-mono); font-size: 13px; }
+.bid-row { display: flex; gap: 8px; align-items: stretch; }
+.step { width: 46px; flex: none; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); font-size: 22px; line-height: 1; }
+.amt-in { flex: 1 1 90px; min-width: 0; display: flex; align-items: center; gap: 4px; border: 2px solid var(--ink); border-radius: 14px; padding: 0 12px; background: var(--surface); }
+.amt-in span { font-family: var(--f-display); font-weight: 800; }
+.amt-in input { border: 0; background: none; width: 100%; min-width: 0; height: 44px; font-family: var(--f-display); font-weight: 800; font-size: 22px; outline: none; font-variant-numeric: tabular-nums; }
+.amt-in:focus-within { border-color: var(--accent); }
+.alt { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.alt small { color: var(--ink-2); font-size: 12px; }
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; font-size: 11.5px; color: var(--ink-2); }
+.steps div { display: grid; gap: 5px; justify-items: center; }
+.steps i { width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 12px; }
+.steps .done i { background: var(--win); border-color: var(--win); color: #fff; }
+.art-wrap { position: relative; display: grid; place-items: center; width: 100%; padding: 28px 40px 24px; min-height: 250px; }
+@media (min-width: 700px) {
+  #layer > .scrim { align-items: center; padding: 24px; }
+  .sheet { width: min(980px, 100%); max-height: 90vh; max-height: 90dvh; border-radius: 26px; }
+  .s-grid { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); }
+  .s-art { align-self: stretch; }
+  .art-wrap { position: sticky; top: 0; min-height: min(520px, 70vh); padding: 40px 28px; }
+  .s-art .tier { left: 16px; top: 16px; }
+  .s-body { padding: 24px 24px 0; }
+  .bidbar { margin-inline: -24px; padding-inline: 24px; }
+}
+@media (min-width: 700px) and (max-width: 959px) {
+  .s-art .art { width: 100%; }
+  .s-body h2 { font-size: 24px; }
+}
+.modal { background: var(--surface); border-radius: 22px; padding: 22px; width: min(440px, 100%); display: grid; gap: 12px; animation: rise .2s ease-out; max-height: 90dvh; overflow: auto; }
+.modal h2 { font-family: var(--f-display); font-size: 22px; letter-spacing: -.02em; }
+.modal p, .modal li { color: var(--ink-2); font-size: 14.5px; }
+.modal.wide { width: min(620px, 100%); }
+.card-sim { display: flex; align-items: center; gap: 12px; border-radius: 16px; padding: 14px; color: #fff; background: linear-gradient(120deg, #1B2B52, #3A1C57 130%); font-family: var(--f-mono); }
+.rules { display: grid; gap: 16px; }
+.rules table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.rules th, .rules td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+.rules td:last-child, .rules th:last-child { text-align: right; font-family: var(--f-mono); }
+.tier-legend { display: grid; gap: 8px; }
+.tier-legend div { display: flex; gap: 12px; align-items: center; }
+.tier-legend .tier { position: static; flex: none; }
+.skins { display: grid; gap: 10px; }
+.skin-opt { display: flex; align-items: center; gap: 14px; text-align: left; width: 100%; border: 2px solid var(--line); background: var(--surface); border-radius: 16px; padding: 10px 12px; }
+.skin-opt .sw { width: 56px; height: 56px; border-radius: 14px; flex: none; border: 1px solid var(--line); }
+.skin-opt .sk-txt { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.skin-opt .sk-txt b { font-family: var(--f-display); font-size: 17px; }
+.skin-opt small { color: var(--ink-2); font-size: 13px; }
+.skin-opt .sk-tick { opacity: 0; color: var(--accent); font-weight: 800; font-size: 18px; }
+.skin-opt[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+.skin-opt[aria-pressed="true"] .sk-tick { opacity: 1; }
+#toasts { position: fixed; z-index: 80; left: 0; right: 0; top: calc(env(safe-area-inset-top, 0px) + 64px); display: grid; gap: 8px; justify-items: center; pointer-events: none; padding-inline: 16px; }
+.toast { pointer-events: auto; background: var(--ink); color: var(--bg); border-radius: 14px; padding: 11px 16px; font-weight: 600; font-size: 14px; box-shadow: var(--shadow); max-width: 440px; animation: rise .25s ease-out; }
+.toast.win { background: var(--win); color: #fff; }
+.toast.lose { background: var(--lose); color: #fff; }
+.toast.warn { background: var(--sun); color: #1A0B02; }
+#win { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 20px; background: var(--win-grad); color: #fff; text-align: center; }
+#win canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.win-card { position: relative; display: grid; gap: 12px; justify-items: center; max-width: 420px; }
+.win-card h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(44px, 12vw, 76px); letter-spacing: -.03em; line-height: .95; animation: pop .5s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } }
+.win-art { width: 170px; background: color-mix(in srgb, var(--tint) var(--mini-mix), var(--mini-base)); border-radius: 26px; padding: 14px; box-shadow: 0 16px 40px rgba(0, 0, 0, .35); }
+.win-art svg { width: 100%; height: auto; display: block; }
+.win-card .btn-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+.win-card .btn-light { background: #fff; color: var(--win-btn-ink); }
+.win-card .btn-outline { background: transparent; color: #fff; border: 2px solid rgba(255, 255, 255, .7); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+<script>try{var __s=localStorage.getItem('dw-skin');if(__s==='classic'||__s==='midnight'||__s==='daylight')document.documentElement.setAttribute('data-skin',__s);}catch(e){}</script>
+
+<div class="demo" role="note"><b>Demo</b>Listings, bidders and payments are simulated. No real money moves.<button class="link" type="button" data-act="rules">How bidding works</button></div>
+
+<header class="top">
+  <div class="wrap bar">
+    <button class="brand-mark" type="button" data-tab="market" aria-label="Drop Window, go to market">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-dasharray="38 16" stroke-linecap="round" transform="rotate(-90 12 12)"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/></svg>
+      <span id="brandName">Drop Window</span>
+    </button>
+    <nav class="tabs" aria-label="Sections">
+      <button class="tab" type="button" data-tab="market" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg><span>Market</span></button>
+      <button class="tab" type="button" data-tab="watch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.7 6.6 19.7l1.2-6L3.3 9.5l6.1-.7z"/></svg><span>Watching</span><i class="count" id="cWatch"></i></button>
+      <button class="tab" type="button" data-tab="bids"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 8.5V13l3 2M9 2.8h6"/></svg><span>My bids</span><i class="count" id="cBids"></i></button>
+    </nav>
+    <div class="actions">
+      <div class="limit" id="limitChip" aria-label="Bid limit"></div>
+      <button class="icon-btn" type="button" data-act="themes" aria-label="Change theme"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-.9 2-1.8 0-.9-.6-1.4-.6-2.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8.2-9-8.2z"/><circle cx="7.6" cy="11.2" r=".9" fill="currentColor"/><circle cx="10.6" cy="7.2" r=".9" fill="currentColor"/><circle cx="15.2" cy="7.6" r=".9" fill="currentColor"/></svg></button>
+      <button class="icon-btn" type="button" data-act="rules" aria-label="How bidding works"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5M12 7.6v.1"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="v-market" aria-label="Market">
+    <div class="hero" id="hero"></div>
+    <div id="railBox" style="margin-top:26px"></div>
+    <div style="margin-top:26px">
+      <div class="sec"><h2>All lots</h2><small id="resultCount"></small></div>
+      <div class="controls">
+        <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="Search brand, item or category" aria-label="Search lots" autocomplete="off"></div>
+        <div class="chips" id="cats" role="group" aria-label="Category"></div>
+        <div class="selects">
+          <label>Fit<select id="fit"><option>All fits</option><option>Women</option><option>Men</option><option>Unisex</option></select></label>
+          <label>Condition<select id="cond"><option value="">Any condition</option><option value="DS">Deadstock</option><option value="EX">Excellent</option><option value="GD">Good</option><option value="WN">Worn</option></select></label>
+          <label>Sort by<select id="sort"><option value="ending">Ending soonest</option><option value="hot">Most bids</option><option value="low">Price, low to high</option><option value="high">Price, high to low</option></select></label>
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <section id="v-watch" aria-label="Watching" hidden>
+    <div class="sec"><h2>Watching</h2><small id="watchNote"></small></div>
+    <div class="grid" id="watchGrid"></div>
+  </section>
+
+  <section id="v-bids" aria-label="My bids" hidden>
+    <div class="summary" id="summary"></div>
+    <div class="seg" id="seg" role="group" aria-label="Bid status"></div>
+    <div class="grid" id="bidGrid"></div>
+  </section>
+</main>
+
+<div id="toasts" aria-live="polite"></div>
+<div id="layer"></div>
+
+<script>
+(function () {
+  'use strict';
+  var BRAND = 'Drop Window';
+  var LIMIT = 5000;
+  var T0 = Date.now();
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var ZAR = function (n) { return 'R' + String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); };
+  var now = function () { return Date.now(); };
+  var rnd = function (a, b) { return a + Math.random() * (b - a); };
+  var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+  $('#brandName').textContent = BRAND;
+
+  /* ---------- bid bands (FUT-style fixed steps) ---------- */
+  var BANDS = [[0, 200, 10], [200, 500, 25], [500, 1000, 50], [1000, 2500, 100], [2500, Infinity, 250]];
+  function inc(p) { for (var i = 0; i < BANDS.length; i++) if (p >= BANDS[i][0] && p < BANDS[i][1]) return BANDS[i][2]; return 250; }
+  function minBid(l) { return l.bids.length ? l.current + inc(l.current) : l.start; }
+
+  /* ---------- condition tiers ---------- */
+  var TIER = {
+    DS: { name: 'Deadstock', cls: 'tier-ds', note: 'New and unworn. Tags and packaging are disclosed.' },
+    EX: { name: 'Excellent', cls: 'tier-ex', note: 'Minimal wear. No undisclosed flaws.' },
+    GD: { name: 'Good', cls: 'tier-gd', note: 'Visible normal wear, shown in photos.' },
+    WN: { name: 'Worn', cls: 'tier-wn', note: 'Heavy wear. Every flaw is disclosed.' }
+  };
+
+  /* ---------- garment art ---------- */
+  function shade(h, p) {
+    var n = parseInt(h.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255, f = p < 0 ? 0 : 255, t = Math.abs(p);
+    r = Math.round((f - r) * t + r); g = Math.round((f - g) * t + g); b = Math.round((f - b) * t + b);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+  var uid = 0;
+  var TEE = 'M62 40 L82 30 Q100 46 118 30 L138 40 L172 76 L150 94 L138 82 L138 168 L62 168 L62 82 L50 94 L28 76 Z';
+  var ART = {
+    tee: function (c, d) { return '<path d="' + TEE + '" fill="' + c + '"/><path d="M82 30 Q100 46 118 30 L118 37 Q100 55 82 37Z" fill="' + d + '"/><circle cx="100" cy="116" r="15" fill="' + d + '" opacity=".4"/>'; },
+    jersey: function (c, d, a) { var id = 'cj' + (++uid); return '<clipPath id="' + id + '"><path d="' + TEE + '"/></clipPath><path d="' + TEE + '" fill="' + c + '"/><g clip-path="url(#' + id + ')" fill="' + a + '"><rect x="74" y="20" width="12" height="160"/><rect x="114" y="20" width="12" height="160"/></g><path d="M82 30 Q100 52 118 30 L110 28 Q100 40 90 28Z" fill="' + d + '"/><path d="M28 76 L50 94 L58 84 L36 66Z M172 76 L150 94 L142 84 L164 66Z" fill="' + a + '"/><circle cx="100" cy="128" r="9" fill="' + a + '"/>'; },
+    hoodie: function (c, d) { return '<path d="M78 42 Q100 4 122 42 Q100 64 78 42Z" fill="' + d + '"/><path d="M58 52 L82 40 L118 40 L142 52 L178 122 L156 134 L142 108 L142 172 L58 172 L58 108 L44 134 L22 122 Z" fill="' + c + '"/><path d="M86 42 Q100 22 114 42 Q100 56 86 42Z" fill="' + shade(c, -.5) + '"/><path d="M72 130 L128 130 L136 158 L64 158 Z" fill="' + d + '" opacity=".55"/><path d="M92 58 V84 M108 58 V84" stroke="' + shade(c, .6) + '" stroke-width="3" stroke-linecap="round"/><path d="M58 160 H142 M22 122 L44 134 M178 122 L156 134" stroke="' + d + '" stroke-width="6"/>'; },
+    bomber: function (c, d, a) { return '<path d="M56 48 L84 38 L116 38 L144 48 L178 118 L156 130 L142 104 L142 168 L58 168 L58 104 L44 130 L22 118 Z" fill="' + c + '"/><path d="M84 38 Q100 58 116 38 L116 28 Q100 46 84 28Z" fill="' + d + '"/><path d="M58 154 H142 V168 H58Z" fill="' + d + '"/><path d="M22 118 L44 130 L40 138 L18 126Z M178 118 L156 130 L160 138 L182 126Z" fill="' + d + '"/><path d="M100 48 V168" stroke="' + shade(c, .65) + '" stroke-width="3"/><path d="M62 96 H142" stroke="' + a + '" stroke-width="7"/><path d="M62 108 H142" stroke="' + a + '" stroke-width="3" opacity=".8"/>'; },
+    denim: function (c, d) { return '<path d="M56 48 L84 38 L116 38 L144 48 L178 118 L156 130 L142 104 L142 168 L58 168 L58 104 L44 130 L22 118 Z" fill="' + c + '"/><path d="M84 38 L100 62 L116 38 L128 46 L100 78 L72 46Z" fill="' + d + '"/><rect x="68" y="86" width="24" height="22" rx="3" fill="' + d + '" opacity=".55"/><rect x="108" y="86" width="24" height="22" rx="3" fill="' + d + '" opacity=".55"/><path d="M100 78 V168" stroke="' + d + '" stroke-width="3" stroke-dasharray="4 3"/><path d="M58 152 H142" stroke="' + d + '" stroke-width="3" stroke-dasharray="4 3"/><circle cx="100" cy="84" r="2.6" fill="#E8D8A8"/><circle cx="100" cy="112" r="2.6" fill="#E8D8A8"/><circle cx="100" cy="140" r="2.6" fill="#E8D8A8"/>'; },
+    sweater: function (c, d) { return '<path d="M60 44 L84 36 Q100 52 116 36 L140 44 L178 124 L156 136 L140 108 L140 170 L60 170 L60 108 L44 136 L22 124 Z" fill="' + c + '"/><path d="M84 36 Q100 52 116 36 L116 44 Q100 62 84 44Z" fill="' + d + '"/><path d="M60 156 H140 V170 H60Z" fill="' + d + '"/><path d="M22 124 L44 136 L40 144 L18 132Z M178 124 L156 136 L160 144 L182 132Z" fill="' + d + '"/><path d="M82 70 q-8 14 0 28 t0 28 M100 70 q-8 14 0 28 t0 28 M118 70 q-8 14 0 28 t0 28" fill="none" stroke="' + d + '" stroke-width="3.2" stroke-linecap="round"/>'; },
+    vest: function (c, d) { return '<path d="M62 40 L82 32 Q100 48 118 32 L138 40 L148 72 L138 84 L138 170 L62 170 L62 84 L52 72 Z" fill="' + c + '"/><path d="M82 32 Q100 48 118 32 L118 42 Q100 58 82 42Z" fill="' + d + '"/><path d="M62 78 H138 M62 104 H138 M62 130 H138 M62 156 H138" stroke="' + d + '" stroke-width="3" opacity=".75"/><path d="M100 46 V170" stroke="' + shade(c, .5) + '" stroke-width="3"/>'; },
+    jeans: function (c, d) { return '<path d="M62 24 H138 L148 178 H108 L100 84 L92 178 H52 Z" fill="' + c + '"/><rect x="62" y="24" width="76" height="12" fill="' + d + '"/><path d="M100 36 V84" stroke="' + d + '" stroke-width="3"/><path d="M68 40 Q84 52 90 70 M132 40 Q116 52 110 70" fill="none" stroke="' + shade(c, .5) + '" stroke-width="2.5" stroke-dasharray="4 3"/><path d="M58 164 H96 M104 164 H142" stroke="' + d + '" stroke-width="3" stroke-dasharray="4 3"/>'; },
+    sneaker: function (c, d) { return '<path d="M22 124 Q22 98 44 94 L62 90 Q70 74 92 76 L104 92 Q150 94 178 112 Q186 118 184 130 L184 138 L22 138 Z" fill="' + c + '"/><path d="M150 98 Q176 106 184 126 V136 H138 Q150 116 150 98Z" fill="' + d + '"/><path d="M22 106 L42 98 V136 H22Z" fill="' + d + '"/><path d="M20 134 H186 V148 Q186 156 176 156 H30 Q20 156 20 148Z" fill="#F4F2EC"/><path d="M82 94 L96 106 M94 86 L108 98 M72 100 L84 112" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path d="M60 118 H132" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".85"/>'; },
+    hightop: function (c, d) { return '<path d="M32 138 V56 Q32 44 46 44 H82 Q94 44 96 58 L104 90 Q152 94 180 112 Q188 118 186 130 V138 Z" fill="' + c + '"/><path d="M148 100 Q178 108 186 128 V138 H138 Q150 118 148 100Z" fill="' + d + '"/><path d="M32 104 H62 V138 H32Z" fill="' + d + '"/><path d="M32 134 H188 V148 Q188 156 178 156 H42 Q32 156 32 148Z" fill="#F4F2EC"/><path d="M48 44 H84 V56 H48Z" fill="' + d + '"/><path d="M70 66 L92 74 M70 80 L96 88 M70 94 L100 102" stroke="#fff" stroke-width="4" stroke-linecap="round"/>'; },
+    cap: function (c, d) { return '<path d="M44 112 Q44 54 100 50 Q156 54 156 112 Z" fill="' + c + '"/><path d="M40 112 Q100 100 178 126 Q178 138 150 134 Q96 120 40 126Z" fill="' + d + '"/><path d="M100 50 V108 M72 56 Q70 84 66 108 M128 56 Q130 84 134 108" fill="none" stroke="' + d + '" stroke-width="2.4" opacity=".6"/><circle cx="100" cy="50" r="5" fill="' + d + '"/>'; },
+    dress: function (c, d) { return '<path d="M80 24 H90 L100 46 L110 24 H120 L124 68 L150 178 H50 L76 68 Z" fill="' + c + '"/><path d="M76 68 H124 L127 82 H73Z" fill="' + d + '"/><path d="M66 118 L60 172 M82 106 L78 174 M100 100 V176 M118 106 L122 174 M134 118 L140 172" stroke="' + d + '" stroke-width="2.6" opacity=".55"/><path d="M90 24 L100 46 L110 24" fill="none" stroke="' + d + '" stroke-width="3"/>'; },
+    bag: function (c, d) { return '<path d="M68 90 Q68 34 100 34 Q132 34 132 90" fill="none" stroke="' + d + '" stroke-width="9" stroke-linecap="round"/><path d="M38 90 H162 L174 168 Q175 176 166 176 H34 Q25 176 26 168 Z" fill="' + c + '"/><path d="M38 90 H162 L166 118 Q100 134 34 118Z" fill="' + d + '"/><rect x="90" y="110" width="20" height="16" rx="4" fill="#F1D58A"/>'; }
+  };
+  function art(l, cls) {
+    return '<svg class="' + (cls || 'art') + '" viewBox="0 0 200 200" role="img" aria-label="' + esc(l.t) + '"><ellipse cx="100" cy="184" rx="62" ry="6" fill="#000" opacity=".12"/>' + ART[l.kind](l.col, shade(l.col, -.24), l.acc || '#FFFFFF') + '</svg>';
+  }
+
+  /* ---------- data ---------- */
+  var HANDLES = ['@thabo_k', '@lerato.v', '@kasi.vintage', '@sneakerhead_jhb', '@nomsa', '@zee_drips', '@amara.w', '@pieter_s', '@naledi', '@jabu.threads'];
+  var SELLERS = {
+    thando: { name: "Thando's Closet", area: 'Braamfontein', rating: 4.9, sales: 212, ontime: 98, disputes: 0 },
+    mika: { name: 'Mika Vintage', area: 'Maboneng', rating: 4.8, sales: 164, ontime: 96, disputes: 1 },
+    rooftop: { name: 'Rooftop Resale', area: 'Rosebank', rating: 4.9, sales: 340, ontime: 99, disputes: 0 },
+    amara: { name: 'Amara Wears', area: 'Melville', rating: 4.7, sales: 88, ontime: 94, disputes: 1 }
+  };
+  function nextDrop() {
+    var d = new Date(); d.setHours(19, 0, 0, 0);
+    d.setDate(d.getDate() + (7 - d.getDay()) % 7);
+    if (d.getTime() <= now()) d.setDate(d.getDate() + 7);
+    return d.getTime();
+  }
+  var DROP = nextDrop();
+  var SEED = [
+    { id: 1, t: 'Boxy heavyweight hoodie, washed charcoal', b: 'Northline', cat: 'Tops', fit: 'Unisex', size: 'L', kind: 'hoodie', col: '#5E6B78', tier: 'EX', rate: 88, start: 180, cur: 260, n: 7, buy: 480, ends: 75, w: 41, s: 'thando', m: [['Pit to pit', '62 cm'], ['Length', '70 cm'], ['Sleeve', '63 cm']], note: 'Soft brushed fleece. Light fade at the cuffs, no stains or holes.' },
+    { id: 2, t: 'Court classic low sneakers, white and navy', b: 'Orbit Athletics', cat: 'Sneakers', fit: 'Unisex', size: 'UK 9', kind: 'sneaker', col: '#1F3A68', tier: 'DS', rate: 97, start: 600, cur: 1150, n: 12, buy: 1900, ends: 260, w: 88, s: 'rooftop', m: [['Size', 'UK 9 / US 10'], ['Length', '28.5 cm'], ['Box', 'Original, included']], note: 'Unworn. Original box and tags included.' },
+    { id: 3, t: 'Vintage denim trucker jacket', b: 'Dustbowl Co.', cat: 'Outerwear', fit: 'Unisex', size: 'M', kind: 'denim', col: '#4F739E', tier: 'GD', rate: 74, start: 250, cur: 410, n: 6, buy: 700, ends: 2280, w: 33, s: 'mika', lead: 'you', m: [['Pit to pit', '56 cm'], ['Length', '60 cm'], ['Sleeve', '61 cm']], note: 'Even fade, one small repair at the left cuff. Buttons all original.' },
+    { id: 4, t: 'Pleated midi dress, emerald', b: 'Maison Verre', cat: 'Dresses', fit: 'Women', size: 'S', kind: 'dress', col: '#0F8B6D', tier: 'EX', rate: 86, start: 300, cur: 520, n: 9, buy: 880, ends: 7800, w: 57, s: 'amara', outbid: true, m: [['Bust', '88 cm'], ['Waist', '70 cm'], ['Length', '112 cm']], note: 'Lined, side zip. Worn twice, pleats intact.' },
+    { id: 5, t: 'Retro football shirt, home kit', b: 'Kasi United', cat: 'Tops', fit: 'Unisex', size: 'XL', kind: 'jersey', col: '#E6B422', acc: '#0D3B66', tier: 'GD', rate: 71, start: 350, cur: 820, n: 14, buy: 1400, drop: 0, w: 120, s: 'rooftop', m: [['Pit to pit', '60 cm'], ['Length', '76 cm']], note: 'Crest and numbers fully intact. Mild pilling under the arms.' },
+    { id: 6, t: 'Cable-knit crewneck, oat', b: 'Alder & Finch', cat: 'Tops', fit: 'Unisex', size: 'M', kind: 'sweater', col: '#D8C3A5', tier: 'EX', rate: 84, start: 140, cur: 140, n: 0, buy: 320, ends: 34200, w: 12, s: 'amara', m: [['Pit to pit', '55 cm'], ['Length', '66 cm'], ['Sleeve', '62 cm']], note: 'Wool blend. No pilling, no snags.' },
+    { id: 7, t: 'Straight-leg raw denim', b: 'Dustbowl Co.', cat: 'Bottoms', fit: 'Men', size: '32', kind: 'jeans', col: '#1E2F4D', tier: 'DS', rate: 96, start: 450, cur: 710, n: 8, buy: 1100, drop: 1, w: 64, s: 'mika', m: [['Waist', '82 cm'], ['Inseam', '82 cm'], ['Rise', '28 cm']], note: 'Unwashed, tags attached. Selvedge edge.' },
+    { id: 8, t: 'Structured top-handle bag, cherry', b: 'Maison Verre', cat: 'Accessories', fit: 'Women', size: 'One size', kind: 'bag', col: '#B5172F', tier: 'EX', rate: 89, start: 700, cur: 1350, n: 11, buy: 2600, drop: 2, w: 97, s: 'rooftop', m: [['Width', '28 cm'], ['Height', '20 cm'], ['Depth', '11 cm']], note: 'Dust bag included. Hardware bright, faint scuff on one corner.' },
+    { id: 9, t: 'Six-panel cap, sun yellow', b: 'Orbit Athletics', cat: 'Accessories', fit: 'Unisex', size: 'One size', kind: 'cap', col: '#F2B01E', tier: 'DS', rate: 98, start: 90, cur: 90, n: 0, buy: 180, ends: 172800, w: 9, s: 'thando', m: [['Fit', 'Adjustable'], ['Brim', '7 cm']], note: 'Unworn with sticker still on the brim.' },
+    { id: 10, t: 'Washed oversized tee, faded black', b: 'Northline', cat: 'Tops', fit: 'Unisex', size: 'XL', kind: 'tee', col: '#2B2F36', tier: 'GD', rate: 70, start: 60, cur: 110, n: 5, buy: 200, ends: 13200, w: 18, s: 'thando', m: [['Pit to pit', '64 cm'], ['Length', '74 cm']], note: 'Faded on purpose. Small pinhole at the hem, shown in photo 4.' },
+    { id: 11, t: 'Nineties track jacket, teal and red', b: 'Kasi United', cat: 'Outerwear', fit: 'Unisex', size: 'L', kind: 'bomber', col: '#0E8A8A', acc: '#E0334C', tier: 'EX', rate: 85, start: 280, cur: 560, n: 10, buy: 950, drop: 3, w: 72, s: 'rooftop', m: [['Pit to pit', '59 cm'], ['Length', '68 cm'], ['Sleeve', '65 cm']], note: 'Full-length zip works smoothly. Cuffs are tight and clean.' },
+    { id: 12, t: 'High-top trainers, cream', b: 'Orbit Athletics', cat: 'Sneakers', fit: 'Women', size: 'UK 6', kind: 'hightop', col: '#E9DFC9', tier: 'GD', rate: 68, start: 220, cur: 340, n: 4, buy: 600, res: 450, ends: 150, w: 27, s: 'amara', m: [['Size', 'UK 6 / US 8'], ['Length', '24.5 cm']], note: 'Light creasing at the toe box. Soles have plenty of tread left.' },
+    { id: 13, t: 'Quilted puffer vest, olive', b: 'Northline', cat: 'Outerwear', fit: 'Unisex', size: 'M', kind: 'vest', col: '#6B7A45', tier: 'EX', rate: 83, start: 200, cur: 480, n: 6, buy: 800, ends: -10800, w: 30, s: 'mika', won: true, m: [['Pit to pit', '54 cm'], ['Length', '66 cm']], note: 'Down-feel fill. Zip pockets are clean inside.' },
+    { id: 14, t: 'Leather crossbody bag, tan', b: 'Maison Verre', cat: 'Accessories', fit: 'Women', size: 'One size', kind: 'bag', col: '#B4793F', tier: 'GD', rate: 73, start: 400, cur: 640, n: 7, buy: 1000, ends: -86400, w: 44, s: 'amara', lost: true, m: [['Width', '24 cm'], ['Height', '17 cm']], note: 'Patina on the strap. Interior is clean.' },
+    { id: 15, t: 'Corduroy overshirt, rust', b: 'Dustbowl Co.', cat: 'Outerwear', fit: 'Unisex', size: 'L', kind: 'denim', col: '#B5552B', tier: 'EX', rate: 82, start: 300, cur: 300, n: 0, buy: 520, res: 300, ends: -7200, lc: 79200, w: 21, s: 'mika', m: [['Pit to pit', '58 cm'], ['Length', '72 cm']], note: 'Heavy cord, no bald patches. Chest pockets with snap closures.' }
+  ];
+
+  function mkBids(start, cur, n, t0) {
+    var out = [], amt = cur, t = t0;
+    for (var i = 0; i < n && amt >= start; i++) {
+      out.push({ who: pick(HANDLES), amt: amt, t: t });
+      amt = amt - inc(Math.max(amt - 1, 0)) * (Math.random() < 0.3 ? 2 : 1);
+      t -= rnd(600000, 5400000);
+    }
+    for (var j = 1; j < out.length; j++) if (out[j].who === out[j - 1].who) out[j].who = pick(HANDLES.filter(function (h) { return h !== out[j - 1].who && h !== (out[j + 1] && out[j + 1].who); }));
+    return out;
+  }
+  var lots = SEED.map(function (s) {
+    var ends = s.drop !== undefined ? DROP + s.drop * 600000 : T0 + s.ends * 1000;
+    var l = { id: s.id, t: s.t, b: s.b, cat: s.cat, fit: s.fit, size: s.size, kind: s.kind, col: s.col, acc: s.acc, tier: s.tier, rate: s.rate, start: s.start, current: s.cur, buyNow: s.buy, res: s.res || 0, endsAt: ends, drop: s.drop, w: s.w, seller: SELLERS[s.s], m: s.m, note: s.note, ext: 0, state: 'live', lc: null, paid: false, cd: 0 };
+    l.bids = mkBids(s.start, s.cur, s.n, T0 - 600000);
+    var b = l.bids;
+    if (s.lead === 'you' && b.length) { b[0].who = 'you'; if (b.length > 2) b[2].who = 'you'; }
+    if (s.outbid && b.length > 1) { b[1].who = 'you'; if (b[0].who === 'you') b[0].who = '@thabo_k'; }
+    if (s.won && b.length) { b[0].who = 'you'; }
+    if (s.lost && b.length > 2) { b[2].who = 'you'; if (b[0].who === 'you') b[0].who = '@nomsa'; }
+    if (ends <= T0) closeLot(l, true, s.lc);
+    return l;
+  });
+  var byId = function (id) { return lots.filter(function (l) { return l.id === +id; })[0]; };
+
+  /* ---------- state ---------- */
+  var S = { tab: 'market', cat: 'All', fit: 'All fits', cond: '', sort: 'ending', q: '', seg: 'winning', open: null, verified: false, watch: [2, 5, 8], draft: {}, pending: null };
+  var CATS = ['All', 'Drop night', 'Tops', 'Outerwear', 'Bottoms', 'Dresses', 'Sneakers', 'Accessories'];
+
+  function leader(l) { return l.bids.length ? l.bids[0].who : null; }
+  function youBid(l) { return l.bids.some(function (b) { return b.who === 'you'; }); }
+  function ustatus(l) {
+    if (l.state === 'live') return leader(l) === 'you' ? 'winning' : (youBid(l) ? 'outbid' : null);
+    if (l.state === 'sold') return leader(l) === 'you' ? 'won' : (youBid(l) ? 'lost' : null);
+    return null;
+  }
+  function committed() { return lots.reduce(function (a, l) { return a + (l.state === 'live' && leader(l) === 'you' ? l.current : 0); }, 0); }
+  function remaining(l) { return l.state === 'live' ? l.endsAt - now() : l.state === 'lastchance' ? l.lc.ends - now() : 0; }
+  function fmt(ms) {
+    if (ms <= 0) return '00:00';
+    var s = Math.ceil(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+    if (d >= 1) return d + 'd ' + h + 'h';
+    if (h >= 1) return h + 'h ' + String(m).padStart(2, '0') + 'm';
+    return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+  }
+  function tstate(ms) { return ms <= 60000 ? 'final' : ms <= 300000 ? 'hot' : ms <= 3600000 ? 'warn' : 'calm'; }
+  function ago(t) { var s = Math.max(1, Math.round((now() - t) / 1000)); if (s < 60) return s < 10 ? 'just now' : s + 's ago'; var m = Math.round(s / 60); if (m < 60) return m + ' min ago'; var h = Math.round(m / 60); if (h < 24) return h + ' h ago'; return Math.round(h / 24) + ' d ago'; }
+
+  /* ---------- lifecycle ---------- */
+  function closeLot(l, silent, lcSecs) {
+    if (l.state !== 'live') return;
+    if (l.bids.length && l.current >= (l.res || 0)) {
+      l.state = 'sold';
+      if (!silent) {
+        if (leader(l) === 'you') win(l);
+        else if (youBid(l)) toast('Ended: you lost ' + l.t + ' at ' + ZAR(l.current) + '.', 'lose');
+      }
+    } else {
+      l.state = 'lastchance';
+      l.lc = { price: l.res || l.start, ends: silent ? T0 + (lcSecs || 86400) * 1000 : now() + 86400000 };
+      if (!silent && youBid(l)) toast(l.t + ' did not reach its reserve. Last chance price: ' + ZAR(l.lc.price) + '.', 'warn');
+    }
+  }
+  function pushBid(l, who, amt) {
+    var rem = l.endsAt - now(), wasYou = leader(l) === 'you';
+    l.bids.unshift({ who: who, amt: amt, t: now() });
+    l.current = amt; l.cd = now();
+    var ot = false;
+    if (rem <= 15000 && l.ext < 5) { l.endsAt += 30000; l.ext++; ot = true; }
+    if (who !== 'you' && wasYou) toast('Outbid on ' + l.t + '. Now ' + ZAR(amt) + '.', 'lose');
+    if (ot && (S.open === l.id || who === 'you' || youBid(l))) toast('Overtime: 30 seconds added to ' + l.t + '.', 'warn');
+    return ot;
+  }
+  function rivalBid(l) {
+    var who = pick(HANDLES.filter(function (h) { return h !== leader(l); }));
+    var step = inc(l.current);
+    var amt = l.bids.length ? l.current + step * (Math.random() < 0.25 ? 2 : 1) : l.start;
+    if (l.buyNow && amt >= l.buyNow) return;
+    pushBid(l, who, amt);
+  }
+  function simTick() {
+    var changed = false, t = now();
+    lots.forEach(function (l) {
+      if (l.state === 'live') {
+        if (t >= l.endsAt) { closeLot(l); changed = true; return; }
+        var ms = l.endsAt - t, p = ms < 30000 ? 0.1 : ms < 120000 ? 0.05 : ms < 900000 ? 0.02 : ms < 7200000 ? 0.006 : 0.0015;
+        if (leader(l) === 'you' && ms < 20000) p = 0.2;
+        if (!l.bids.length) p *= 0.5;
+        if (Math.random() < p && t - l.cd > 2500) { rivalBid(l); changed = true; }
+      } else if (l.state === 'lastchance' && t >= l.lc.ends) { l.state = 'expired'; changed = true; }
+    });
+    if (changed) refresh();
+  }
+
+  /* ---------- user actions ---------- */
+  function overLimit(l, amt) { return committed() - (l.state === 'live' && leader(l) === 'you' ? l.current : 0) + amt - LIMIT; }
+  function attemptBid(l, amt) {
+    if (l.state !== 'live') return;
+    if (leader(l) === 'you') return toast('You already hold the lead on this lot.', 'warn');
+    var min = minBid(l), s = inc(min);
+    if (!(amt >= min)) return toast('The minimum bid is ' + ZAR(min) + '.', 'warn');
+    amt = Math.ceil(amt / s) * s;
+    if (l.buyNow && amt >= l.buyNow) return attemptBuy(l);
+    var over = overLimit(l, amt);
+    if (over > 0) return toast('That puts you ' + ZAR(over) + ' over your ' + ZAR(LIMIT) + ' bid limit.', 'lose');
+    if (!S.verified) return openVerify(function () { attemptBid(l, amt); });
+    pushBid(l, 'you', amt);
+    S.draft[l.id] = minBid(l);
+    toast("You're winning " + l.t + ' at ' + ZAR(amt) + '.', 'win');
+    refresh();
+  }
+  function attemptBuy(l) {
+    if (l.state !== 'live' && l.state !== 'lastchance') return;
+    var price = l.state === 'lastchance' ? l.lc.price : l.buyNow;
+    var over = overLimit(l, price);
+    if (over > 0) return toast('That puts you ' + ZAR(over) + ' over your ' + ZAR(LIMIT) + ' bid limit.', 'lose');
+    if (!S.verified) return openVerify(function () { attemptBuy(l); });
+    l.bids.unshift({ who: 'you', amt: price, t: now() });
+    l.current = price; l.state = 'sold';
+    win(l);
+    refresh();
+  }
+  function toggleWatch(id) {
+    var i = S.watch.indexOf(id);
+    if (i >= 0) S.watch.splice(i, 1); else { S.watch.push(id); toast('Added to your watchlist.'); }
+    refresh();
+  }
+
+  /* ---------- rendering: cards ---------- */
+  var ICON = {
+    clock: '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 4.6V8l2.3 1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    star: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3.2l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.7 6.6 19.7l1.2-6L3.3 9.5l6.1-.7z" stroke-width="2" stroke-linejoin="round"/></svg>',
+    x: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  function timerPill(l) {
+    if (l.state === 'sold' || l.state === 'expired') return '<span class="timer t-done"><b>Ended</b></span>';
+    var ms = remaining(l), ts = l.state === 'lastchance' ? (ms < 3600000 ? 'warn' : 'calm') : tstate(ms);
+    return '<span class="timer t-' + ts + '" data-t="' + l.id + '">' + ICON.clock + '<b>' + fmt(ms) + '</b>' + (l.ext > 0 && l.state === 'live' ? '<em class="ot"><span>OT</span></em>' : '') + '</span>';
+  }
+  function chipFor(l, st) {
+    if (st === 'winning') return '<span class="chip chip-win">Winning</span>';
+    if (st === 'outbid') return '<span class="chip chip-lose">Outbid</span>';
+    if (st === 'won') return '<span class="chip chip-win">' + (l.paid ? 'Paid' : 'Pay now') + '</span>';
+    if (st === 'lost') return '<span class="chip chip-lose">Lost</span>';
+    if (l.state === 'lastchance') return '<span class="chip chip-warn">Last chance</span>';
+    return '<span class="chip">' + (l.bids.length ? l.bids.length + (l.bids.length === 1 ? ' bid' : ' bids') : 'No bids') + '</span>';
+  }
+  function card(l, rail) {
+    var st = ustatus(l), tr = TIER[l.tier];
+    var label = l.state === 'lastchance' ? 'Last chance price' : l.state === 'sold' ? 'Final price' : l.bids.length ? 'Current bid' : 'Starting bid';
+    var price = l.state === 'lastchance' ? l.lc.price : l.current;
+    return '<article class="card' + (rail ? ' in-rail' : '') + '" style="--tint:' + l.col + '"><div class="panel">' + art(l) +
+      '<span class="tier ' + tr.cls + '" title="' + tr.name + '"><b>' + l.rate + '</b><i>' + l.tier + '</i></span>' +
+      '<button class="watch" type="button" data-watch="' + l.id + '" aria-pressed="' + (S.watch.indexOf(l.id) >= 0) + '" aria-label="Watch ' + esc(l.t) + '">' + ICON.star + '</button>' +
+      timerPill(l) + (l.drop !== undefined && l.state === 'live' ? '<span class="tag-drop">Drop night</span>' : '') +
+      '</div><div class="meta"><p class="brand">' + esc(l.b) + '</p><h3><button class="open" type="button" data-open="' + l.id + '">' + esc(l.t) + '</button></h3><p class="sub">' + esc(l.size) + ' · ' + l.fit + '</p>' +
+      '<div class="price-row"><div><span class="lbl">' + label + '</span><strong class="amt">' + ZAR(price) + '</strong></div>' + chipFor(l, st) + '</div></div></article>';
+  }
+  function empty(h, p) { return '<div class="empty" style="grid-column:1/-1"><h3>' + h + '</h3><p>' + p + '</p></div>'; }
+
+  /* ---------- rendering: views ---------- */
+  function renderHero() {
+    var dl = lots.filter(function (l) { return l.drop !== undefined && l.state === 'live'; });
+    var total = dl.reduce(function (a, l) { return a + l.current; }, 0);
+    var lamp = function (cx) { return '<line x1="' + cx + '" y1="-40" x2="' + cx + '" y2="17" stroke="#22345F" stroke-width="2"/><path d="M' + (cx - 15) + ' 38 L' + (cx - 8) + ' 16 H' + (cx + 8) + ' L' + (cx + 15) + ' 38Z" fill="#22345F"/><ellipse cx="' + cx + '" cy="38" rx="12" ry="3.6" fill="#FFFFFF"/><path d="M' + (cx - 12) + ' 39 L' + (cx + 12) + ' 39 L' + (cx + 70) + ' 258 L' + (cx - 70) + ' 258Z" fill="url(#dwBeam)"/>'; };
+    var lamps = '<svg class="lamps" viewBox="0 0 360 260" preserveAspectRatio="xMidYMin meet" aria-hidden="true"><defs><linearGradient id="dwBeam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".8"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>' + lamp(66) + lamp(180) + lamp(294) + '</svg>';
+    var fan = [5, 8, 11].map(function (id) { var l = byId(id); return '<div class="mini" style="--tint:' + l.col + '">' + art(l) + '</div>'; }).join('');
+    $('#hero').innerHTML = '<div><p class="eyebrow">Weekly closing window</p><h1>Drop night closes the week’s best lots</h1>' +
+      '<p class="sub">Every featured lot closes on Sunday between 19:00 and 19:30, so everyone is bidding at the same time.</p>' +
+      '<div class="dial" aria-label="Time until drop night"><div><b data-drop="d">00</b><small>days</small></div><div><b data-drop="h">00</b><small>hrs</small></div><div><b data-drop="m">00</b><small>min</small></div><div><b data-drop="s">00</b><small>sec</small></div></div>' +
+      '<div class="hero-stats"><span>' + dl.length + ' lots closing</span><span>' + ZAR(total) + ' in bids so far</span></div>' +
+      '<button class="btn btn-dark" type="button" data-cat="Drop night">See drop night lots</button></div><div class="fan" aria-hidden="true">' + lamps + fan + '</div>';
+  }
+  function renderRail() {
+    var soon = lots.filter(function (l) { return l.state === 'live' && remaining(l) < 900000; }).sort(function (a, b) { return a.endsAt - b.endsAt; });
+    $('#railBox').innerHTML = soon.length ? '<div class="sec"><h2><span class="live-dot"></span>Closing soon</h2><small>Under 15 minutes left</small></div><div class="rail-row">' + soon.map(function (l) { return card(l, true); }).join('') + '</div>' : '';
+  }
+  function visible() {
+    var q = S.q.trim().toLowerCase();
+    var arr = lots.filter(function (l) {
+      if (l.state !== 'live' && l.state !== 'lastchance') return false;
+      if (S.cat === 'Drop night' ? l.drop === undefined : (S.cat !== 'All' && l.cat !== S.cat)) return false;
+      if (S.fit !== 'All fits' && l.fit !== S.fit) return false;
+      if (S.cond && l.tier !== S.cond) return false;
+      if (q && (l.t + ' ' + l.b + ' ' + l.cat + ' ' + l.fit).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+    var key = { ending: function (a, b) { return remaining(a) - remaining(b); }, hot: function (a, b) { return b.bids.length - a.bids.length; }, low: function (a, b) { return a.current - b.current; }, high: function (a, b) { return b.current - a.current; } }[S.sort];
+    return arr.sort(function (a, b) { if ((a.state === 'lastchance') !== (b.state === 'lastchance')) return a.state === 'lastchance' ? 1 : -1; return key(a, b); });
+  }
+  function renderGrid() {
+    var arr = visible();
+    $('#resultCount').textContent = arr.length + (arr.length === 1 ? ' lot' : ' lots');
+    $('#grid').innerHTML = arr.length ? arr.map(function (l) { return card(l); }).join('') : empty('No lots match', 'Try a different category or clear the search.');
+    $$('#cats .pill').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.cat === S.cat)); });
+  }
+  function renderWatch() {
+    var arr = S.watch.map(byId).filter(Boolean);
+    $('#watchNote').textContent = arr.length ? arr.length + ' saved' : '';
+    $('#watchGrid').innerHTML = arr.length ? arr.map(function (l) { return card(l); }).join('') : empty('Nothing watched yet', 'Tap the star on any lot to keep it here and track the clock.');
+  }
+  function renderBids() {
+    var g = { winning: [], outbid: [], won: [], lost: [] };
+    lots.forEach(function (l) { var s = ustatus(l); if (s) g[s].push(l); });
+    var used = committed(), pct = Math.min(100, used / LIMIT * 100);
+    $('#summary').innerHTML = '<div class="tile wide"><span class="k">Committed to winning bids</span><span class="v">' + ZAR(used) + ' <small style="font:500 14px var(--f-body);color:var(--ink-2)">of ' + ZAR(LIMIT) + ' limit</small></span><div class="meter"><i style="width:' + pct + '%"></i></div></div>' +
+      '<div class="tile"><span class="k">Winning</span><span class="v">' + g.winning.length + '</span></div><div class="tile"><span class="k">Outbid</span><span class="v">' + g.outbid.length + '</span></div><div class="tile"><span class="k">Won</span><span class="v">' + g.won.length + '</span></div>';
+    var names = { winning: 'Winning', outbid: 'Outbid', won: 'Won', lost: 'Lost' };
+    $('#seg').innerHTML = Object.keys(names).map(function (k) { return '<button type="button" data-seg="' + k + '" aria-pressed="' + (S.seg === k) + '">' + names[k] + '<span class="n">' + g[k].length + '</span></button>'; }).join('');
+    var msg = { winning: ['No winning bids yet', 'Place a bid on any live lot. The lead is yours until someone tops it.'], outbid: ['You are not outbid anywhere', 'When someone passes your bid, the lot shows up here so you can rebid fast.'], won: ['No wins yet', 'Lots you win land here with a payment step.'], lost: ['No lost auctions', 'Auctions that close without you leading are listed here.'] }[S.seg];
+    var arr = g[S.seg].sort(function (a, b) { return a.endsAt - b.endsAt; });
+    $('#bidGrid').innerHTML = arr.length ? arr.map(function (l) { return card(l); }).join('') : empty(msg[0], msg[1]);
+  }
+  function renderChrome() {
+    var w = S.watch.length, bl = lots.filter(function (l) { var s = ustatus(l); return s === 'winning' || s === 'outbid'; }).length;
+    $('#cWatch').textContent = w || ''; $('#cBids').textContent = bl || '';
+    var used = committed();
+    $('#limitChip').innerHTML = '<span><em>Bid limit</em> <b>' + ZAR(used) + ' / ' + ZAR(LIMIT) + '</b></span><div class="meter"><i style="width:' + Math.min(100, used / LIMIT * 100) + '%"></i></div>';
+    $$('.tab').forEach(function (b) { if (b.dataset.tab === S.tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+    ['market', 'watch', 'bids'].forEach(function (t) { $('#v-' + t).hidden = S.tab !== t; });
+  }
+  function refresh() {
+    renderChrome();
+    if (S.tab === 'market') { renderRail(); renderGrid(); }
+    if (S.tab === 'watch') renderWatch();
+    if (S.tab === 'bids') renderBids();
+    if (S.open) renderSheet();
+  }
+
+  /* ---------- sheet ---------- */
+  var layer = $('#layer'), lastFocus = null;
+  function banner(l, st) {
+    if (st === 'winning') return '<div class="banner win"><div><strong>You’re winning</strong><br>Hold the lead at ' + ZAR(l.current) + ' until the clock ends.</div></div>';
+    if (st === 'outbid') return '<div class="banner lose"><div><strong>You’ve been outbid</strong><br>The lead is now ' + ZAR(l.current) + '. Bid again to take it back.</div></div>';
+    if (st === 'won') return '<div class="banner win"><div><strong>You won this lot</strong><br>Final price ' + ZAR(l.current) + '.</div></div>';
+    if (st === 'lost') return '<div class="banner lose"><div><strong>Auction ended</strong><br>It closed at ' + ZAR(l.current) + '. Another bidder won.</div></div>';
+    if (l.state === 'lastchance') return '<div class="banner warn"><div><strong>Last chance</strong><br>The auction did not reach its reserve. Buy it at the fixed price before the timer ends.</div></div>';
+    if (l.state === 'expired') return '<div class="banner"><div><strong>No longer available</strong><br>The last chance window has closed.</div></div>';
+    if (l.state === 'sold') return '<div class="banner"><div><strong>Sold</strong><br>This auction has ended.</div></div>';
+    return '';
+  }
+  function bidBar(l) {
+    if (l.state === 'lastchance') return '<div class="bidbar"><button class="btn btn-primary" type="button" data-act="buy" style="width:100%">Buy now for ' + ZAR(l.lc.price) + '</button></div>';
+    if (l.state !== 'live') return '';
+    var min = minBid(l), s = inc(min), mine = leader(l) === 'you';
+    var draft = S.draft[l.id]; if (!(draft >= min)) draft = min;
+    var opts = [[min, 'Min ' + ZAR(min)], [min + s, '+' + ZAR(s)], [min + 3 * s, '+' + ZAR(3 * s)], [min + 5 * s, '+' + ZAR(5 * s)]].filter(function (o) { return !l.buyNow || o[0] < l.buyNow; });
+    return '<div class="bidbar">' + (mine ? '<p class="alt"><small>You hold the lead. You can bid again if someone passes you.</small></p>' : '') +
+      '<div class="quick">' + opts.map(function (o) { return '<button type="button" data-amt="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="bid-row"><button class="step" type="button" data-step="-1" aria-label="Lower bid">−</button><label class="amt-in"><span>R</span><input id="bidAmt" inputmode="numeric" pattern="[0-9]*" value="' + draft + '" aria-label="Your bid in rand"></label><button class="step" type="button" data-step="1" aria-label="Raise bid">+</button><button class="btn btn-primary" type="button" data-act="bid"' + (mine ? ' disabled' : '') + '>Place bid</button></div>' +
+      '<div class="alt">' + (l.buyNow && l.current < l.buyNow ? '<button class="btn btn-ghost" type="button" data-act="buy">Buy now ' + ZAR(l.buyNow) + '</button>' : '<span></span>') + '<small>Bids in the last 15s add 30s.</small></div></div>';
+  }
+  function payBlock(l) {
+    var steps = ['Won', 'Paid', 'Shipped', 'Delivered'], done = l.paid ? 2 : 1;
+    return '<div><p class="h4">After the win</p><div class="steps">' + steps.map(function (s, i) { return '<div class="' + (i < done ? 'done' : '') + '"><i>' + (i < done ? '✓' : i + 1) + '</i>' + s + '</div>'; }).join('') + '</div>' +
+      (l.paid ? '<p style="margin-top:12px;color:var(--ink-2);font-size:14px">Paid with the demo card. In a real build the seller would now have three days to ship to your chosen collection point.</p>' : '<button class="btn btn-win" type="button" data-act="pay" style="margin-top:12px;width:100%">Pay ' + ZAR(l.current) + ' with demo card</button>') + '</div>';
+  }
+  function sheetHTML(l) {
+    var st = ustatus(l), tr = TIER[l.tier], sel = l.seller, ms = remaining(l);
+    var ts = l.state === 'live' ? tstate(ms) : (l.state === 'lastchance' ? (ms < 3600000 ? 'warn' : 'calm') : 'calm');
+    var timeLbl = l.state === 'live' ? 'Closes in' : l.state === 'lastchance' ? 'Last chance ends in' : 'Auction';
+    var timeVal = (l.state === 'live' || l.state === 'lastchance') ? '<span class="big t-' + ts + '" data-t="' + l.id + '" data-plain="1">' + fmt(ms) + '</span>' : '<span class="big">Ended</span>';
+    var priceLbl = l.state === 'lastchance' ? 'Last chance price' : l.state === 'sold' ? 'Final price' : l.bids.length ? 'Current bid' : 'Starting bid';
+    var price = l.state === 'lastchance' ? l.lc.price : l.current;
+    var hist = l.bids.slice(0, 8).map(function (b) { return '<li class="' + (b.who === 'you' ? 'me' : '') + '"><span>' + (b.who === 'you' ? 'You' : esc(b.who)) + '</span><b>' + ZAR(b.amt) + '</b><span class="t">' + ago(b.t) + '</span></li>'; }).join('');
+    return '<button class="close" type="button" data-close aria-label="Close">' + ICON.x + '</button><div class="s-grid"><div class="s-art" style="--tint:' + l.col + '"><div class="art-wrap">' + art(l) + '<span class="tier ' + tr.cls + '"><b>' + l.rate + '</b><i>' + l.tier + '</i></span></div></div>' +
+      '<div class="s-body"><div><p class="brand">' + esc(l.b) + ' · ' + l.cat + '</p><h2 id="sheetTitle">' + esc(l.t) + '</h2></div>' +
+      '<div class="facts"><span class="chip">Size ' + esc(l.size) + '</span><span class="chip">' + l.fit + '</span><span class="chip">' + tr.name + ' · ' + l.rate + '</span>' + (l.drop !== undefined ? '<span class="chip chip-accent">Drop night</span>' : '') + (l.ext ? '<span class="chip chip-warn">Overtime x' + l.ext + '</span>' : '') + '<button class="chip" type="button" data-watch="' + l.id + '" aria-pressed="' + (S.watch.indexOf(l.id) >= 0) + '">' + (S.watch.indexOf(l.id) >= 0 ? '★ Watching' : '☆ Watch') + '</button></div>' +
+      banner(l, st) +
+      '<div class="clock-row"><div><span class="lbl">' + timeLbl + '</span>' + timeVal + '</div><div><span class="lbl">' + priceLbl + '</span><span class="price">' + ZAR(price) + '</span></div></div>' +
+      (st === 'won' ? payBlock(l) : '') +
+      '<div><p class="h4">Measurements</p><div class="kv">' + l.m.map(function (r) { return '<div><small>' + r[0] + '</small><b>' + r[1] + '</b></div>'; }).join('') + '</div></div>' +
+      '<div><p class="h4">Condition: ' + tr.name + '</p><p>' + esc(l.note) + '</p><p style="color:var(--ink-2);font-size:13px;margin-top:4px">' + tr.note + '</p></div>' +
+      '<div class="seller"><div class="seller-top"><div class="avatar">' + esc(sel.name[0]) + '</div><div><b>' + esc(sel.name) + '</b><br><small style="color:var(--ink-2)">' + sel.area + ', Johannesburg · ID verified</small></div></div><div class="seller-stats"><div><b>' + sel.rating + '</b><small>rating</small></div><div><b>' + sel.ontime + '%</b><small>shipped on time</small></div><div><b>' + sel.disputes + '</b><small>open disputes</small></div></div></div>' +
+      '<div><p class="h4">Bid history</p>' + (hist ? '<ul class="hist">' + hist + '</ul>' : '<p style="color:var(--ink-2)">No bids yet. The first bid sets the pace at ' + ZAR(l.start) + '.</p>') + '</div>' +
+      bidBar(l) + '</div></div>';
+  }
+  function renderSheet() {
+    var l = byId(S.open); if (!l) return;
+    var sc = $('.sheet', layer), top = sc ? sc.scrollTop : 0;
+    var inp = $('#bidAmt'), had = inp && document.activeElement === inp, pos = had ? inp.selectionStart : 0;
+    var scrim = $('.scrim.s1', layer);
+    if (!scrim) {
+      scrim = document.createElement('div'); scrim.className = 'scrim s1';
+      scrim.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div>';
+      layer.appendChild(scrim);
+    }
+    $('.sheet', scrim).innerHTML = sheetHTML(l);
+    var sh = $('.sheet', scrim); sh.scrollTop = top;
+    if (had) { var n = $('#bidAmt'); n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} }
+  }
+  function openSheet(id) {
+    lastFocus = document.activeElement; S.open = id; var l = byId(id);
+    if (!(S.draft[id] >= minBid(l))) S.draft[id] = minBid(l);
+    renderSheet(); var c = $('.sheet .close', layer); if (c) c.focus();
+  }
+  function closeSheet() {
+    S.open = null; var s = $('.scrim.s1', layer); if (s) s.remove();
+    if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch (e) {}
+  }
+
+  /* ---------- modals ---------- */
+  function modal(html, cls) {
+    var s = document.createElement('div'); s.className = 'scrim top2'; s.innerHTML = '<div class="modal ' + (cls || '') + '" role="dialog" aria-modal="true">' + html + '</div>';
+    layer.appendChild(s); var f = $('button', s); if (f) f.focus(); return s;
+  }
+  function closeModal() { var m = $$('.scrim.top2', layer); if (m.length) m[m.length - 1].remove(); }
+  function openVerify(cont) {
+    S.pending = cont;
+    modal('<h2>Make your bids payment-ready</h2><p>Every bid is backed by a checked payment method, so winners can always be charged when the clock ends. This prototype uses a demo card.</p><div class="card-sim"><span>Demo card</span><span style="margin-left:auto">•••• 0000</span></div><button class="btn btn-primary" type="button" data-act="verify">Use demo card and continue</button><button class="btn btn-ghost" type="button" data-close-modal>Not now</button>');
+  }
+  function openRules() {
+    var rows = BANDS.map(function (b) { return '<tr><td>' + (b[1] === Infinity ? ZAR(b[0]) + ' and up' : ZAR(b[0]) + ' to ' + ZAR(b[1] - 1)) + '</td><td>+' + ZAR(b[2]) + '</td></tr>'; }).join('');
+    var tiers = Object.keys(TIER).map(function (k) { var t = TIER[k]; return '<div><span class="tier ' + t.cls + '"><b>' + (k === 'DS' ? 97 : k === 'EX' ? 86 : k === 'GD' ? 72 : 55) + '</b><i>' + k + '</i></span><span><b>' + t.name + '.</b> ' + t.note + '</span></div>'; }).join('');
+    modal('<h2>How bidding works</h2><div class="rules"><div><p class="h4">Bid steps</p><table><tbody>' + rows + '</tbody></table></div>' +
+      '<div><p class="h4">Overtime</p><p>A bid in the last 15 seconds adds 30 seconds, up to five times per lot. Nobody wins by sniping.</p></div>' +
+      '<div><p class="h4">Payment-ready bids</p><p>Your payment method is checked before your first bid. Your bid limit caps how much you can lead at once.</p></div>' +
+      '<div><p class="h4">Last chance</p><p>If a lot closes below the seller’s reserve, it stays open for 24 hours at a fixed price.</p></div>' +
+      '<div><p class="h4">Condition tiers</p><div class="tier-legend">' + tiers + '</div></div>' +
+      '<div><p class="h4">Demo build</p><p>Listings, rival bidders and payments are simulated. Refreshing the page resets everything.</p></div></div><button class="btn btn-primary" type="button" data-close-modal>Got it</button>', 'wide');
+  }
+
+  /* ---------- themes ---------- */
+  var SKINS = [
+    { id: 'daylight', name: 'Daylight', note: 'Bright and airy. The default.', sw: 'linear-gradient(135deg,#2F54AE 0%,#7FA3DD 55%,#FFFFFF 100%)', conf: ['#FFFFFF', '#FFC247', '#8BE6DA', '#9FB8F5', '#FF7A3D'] },
+    { id: 'classic', name: 'Classic', note: 'The original light look, warm orange on cool grey.', sw: 'linear-gradient(135deg,#FF5A1F 0%,#FFC247 60%,#EDF0F6 100%)', conf: ['#FFC247', '#FFFFFF', '#1A0B02', '#FF8A2A', '#35D6A0'] },
+    { id: 'midnight', name: 'Midnight', note: 'The original dark look for night browsing.', sw: 'linear-gradient(135deg,#080D1C 0%,#1A2447 55%,#FF6A3A 100%)', conf: ['#FFC247', '#FFFFFF', '#1A0B02', '#FF8A2A', '#35D6A0'] }
+  ];
+  function currentSkin() { var a = document.documentElement.getAttribute('data-skin'); return a === 'classic' || a === 'midnight' ? a : 'daylight'; }
+  function applySkin(id) {
+    if (!SKINS.some(function (k) { return k.id === id; })) return;
+    document.documentElement.setAttribute('data-skin', id);
+    try { localStorage.setItem('dw-skin', id); } catch (e) {}
+    $$('.skin-opt').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.pickSkin === id)); });
+  }
+  function openThemes() {
+    var cur = currentSkin();
+    var opts = SKINS.map(function (k) { return '<button class="skin-opt" type="button" data-pick-skin="' + k.id + '" aria-pressed="' + (k.id === cur) + '"><span class="sw" style="background:' + k.sw + '"></span><span class="sk-txt"><b>' + k.name + '</b><small>' + k.note + '</small></span><span class="sk-tick" aria-hidden="true">✓</span></button>'; }).join('');
+    modal('<h2>Choose a theme</h2><p>Your choice is remembered on this device.</p><div class="skins">' + opts + '</div><button class="btn btn-primary" type="button" data-close-modal>Done</button>');
+  }
+
+  /* ---------- toast ---------- */
+  function toast(msg, kind) {
+    var t = document.createElement('div'); t.className = 'toast ' + (kind || ''); t.textContent = msg;
+    var box = $('#toasts'); box.appendChild(t);
+    while (box.children.length > 3) box.removeChild(box.firstChild);
+    setTimeout(function () { if (t.parentNode) t.remove(); }, 4200);
+  }
+
+  /* ---------- win moment ---------- */
+  var raf = 0;
+  function win(l) {
+    var old = $('#win'); if (old) old.remove();
+    var el = document.createElement('div'); el.id = 'win'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'You won');
+    el.innerHTML = '<canvas aria-hidden="true"></canvas><div class="win-card" style="--tint:' + l.col + '"><p class="eyebrow">Auction closed</p><h1>You won it</h1><div class="win-art">' + art(l) + '</div><p style="font-size:18px;font-weight:700">' + esc(l.t) + '</p><p style="font-size:26px;font-family:var(--f-display);font-weight:800">' + ZAR(l.current) + '</p><p style="opacity:.9;max-width:34ch">Pay within 30 minutes to lock it in. The seller ships once payment clears.</p><div class="btn-row"><button class="btn btn-light" type="button" data-act="winpay" data-id="' + l.id + '">Pay with demo card</button><button class="btn btn-outline" type="button" data-act="winclose">View my wins</button></div></div>';
+    document.body.appendChild(el);
+    $('button', el).focus();
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) confetti($('canvas', el));
+  }
+  function confetti(cv) {
+    var ctx = cv.getContext('2d'), W = cv.width = innerWidth, H = cv.height = innerHeight, cols = SKINS.filter(function (k) { return k.id === currentSkin(); })[0].conf;
+    var ps = []; for (var i = 0; i < 140; i++) ps.push({ x: rnd(0, W), y: rnd(-H * .5, 0), vx: rnd(-1.4, 1.4), vy: rnd(2, 5.5), r: rnd(4, 9), a: rnd(0, 6.28), va: rnd(-.2, .2), c: pick(cols) });
+    var t0 = now(); cancelAnimationFrame(raf);
+    (function loop() {
+      ctx.clearRect(0, 0, W, H);
+      ps.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.a += p.va; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.fillStyle = p.c; ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); ctx.restore(); });
+      if (now() - t0 < 3200 && $('#win')) raf = requestAnimationFrame(loop); else ctx.clearRect(0, 0, W, H);
+    })();
+  }
+  function closeWin(toBids) {
+    var w = $('#win'); if (w) w.remove();
+    if (toBids) { S.tab = 'bids'; S.seg = 'won'; window.scrollTo(0, 0); }
+    refresh();
+  }
+
+  /* ---------- events ---------- */
+  function setBid(v) { var i = $('#bidAmt'); if (i) { i.value = v; if (S.open) S.draft[S.open] = v; } }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-open],[data-watch],[data-tab],[data-cat],[data-seg],[data-act],[data-amt],[data-step],[data-close],[data-close-modal],[data-pick-skin]');
+    if (!t) { if (e.target.classList && e.target.classList.contains('scrim')) { if (e.target.classList.contains('top2')) closeModal(); else closeSheet(); } return; }
+    var d = t.dataset;
+    if (d.pickSkin) { applySkin(d.pickSkin); return; }
+    if (d.watch) { toggleWatch(+d.watch); return; }
+    if (d.open) { openSheet(+d.open); return; }
+    if (d.tab) { S.tab = d.tab; window.scrollTo(0, 0); refresh(); return; }
+    if (d.cat) { S.cat = (S.cat === d.cat && d.cat !== 'All') ? 'All' : d.cat; S.tab = 'market'; refresh(); if (t.closest('.hero')) { var g = $('#cats'); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' }); } return; }
+    if (d.seg) { S.seg = d.seg; refresh(); return; }
+    if (d.close !== undefined) { closeSheet(); return; }
+    if (d.closeModal !== undefined) { closeModal(); return; }
+    if (d.amt) { setBid(+d.amt); return; }
+    if (d.step) { var l0 = byId(S.open), cur = +($('#bidAmt').value) || minBid(l0), st = inc(minBid(l0)); setBid(Math.max(minBid(l0), cur + (+d.step) * st)); return; }
+    var a = d.act, l = S.open ? byId(S.open) : null;
+    if (a === 'rules') openRules();
+    else if (a === 'themes') openThemes();
+    else if (a === 'bid' && l) attemptBid(l, parseInt(($('#bidAmt').value || '').replace(/\D/g, ''), 10) || 0);
+    else if (a === 'buy' && l) attemptBuy(l);
+    else if (a === 'verify') { S.verified = true; closeModal(); var c = S.pending; S.pending = null; if (c) c(); }
+    else if (a === 'pay' && l) { l.paid = true; toast('Paid with the demo card. The seller has been told to ship.', 'win'); refresh(); }
+    else if (a === 'winpay') { var wl = byId(+d.id); wl.paid = true; closeWin(true); toast('Paid with the demo card. The seller has been told to ship.', 'win'); }
+    else if (a === 'winclose') closeWin(true);
+  });
+  document.addEventListener('input', function (e) {
+    if (e.target.id === 'bidAmt') { var v = parseInt(e.target.value.replace(/\D/g, ''), 10); if (S.open && v) S.draft[S.open] = v; }
+    if (e.target.id === 'q') { S.q = e.target.value; renderGrid(); }
+  });
+  document.addEventListener('change', function (e) {
+    if (e.target.id === 'fit') { S.fit = e.target.value; renderGrid(); }
+    if (e.target.id === 'cond') { S.cond = e.target.value; renderGrid(); }
+    if (e.target.id === 'sort') { S.sort = e.target.value; renderGrid(); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { if ($('#win')) closeWin(false); else if ($('.scrim.top2', layer)) closeModal(); else if (S.open) closeSheet(); }
+    if (e.key === 'Enter' && e.target.id === 'bidAmt') { var l = byId(S.open); attemptBid(l, parseInt(e.target.value.replace(/\D/g, ''), 10) || 0); }
+  });
+
+  /* ---------- clocks ---------- */
+  function fmtLong(ms) {
+    var s = Math.max(0, Math.floor(ms / 1000));
+    return { d: Math.floor(s / 86400), h: Math.floor(s % 86400 / 3600), m: Math.floor(s % 3600 / 60), s: s % 60 };
+  }
+  function uiTick() {
+    $$('[data-t]').forEach(function (el) {
+      var l = byId(el.dataset.t); if (!l) return;
+      var ms = remaining(l), ts = l.state === 'lastchance' ? (ms < 3600000 ? 'warn' : 'calm') : tstate(ms);
+      var b = el.dataset.plain ? el : $('b', el);
+      if (b) b.textContent = ms > 0 ? fmt(ms) : (l.state === 'live' ? '00:00' : 'Ended');
+      el.className = (el.dataset.plain ? 'big' : 'timer') + ' t-' + ts;
+    });
+    var p = fmtLong(DROP - now()), map = { d: p.d, h: p.h, m: p.m, s: p.s };
+    $$('[data-drop]').forEach(function (el) { el.textContent = String(map[el.dataset.drop]).padStart(2, '0'); });
+  }
+
+  /* ---------- boot ---------- */
+  function buildStatic() {
+    $('#cats').innerHTML = CATS.map(function (c) { return '<button class="pill' + (c === 'Drop night' ? ' drop' : '') + '" type="button" data-cat="' + c + '" aria-pressed="' + (c === S.cat) + '">' + c + '</button>'; }).join('');
+    renderHero();
+  }
+  buildStatic(); refresh(); uiTick();
+  setInterval(uiTick, 250);
+  setInterval(simTick, 1000);
+  window.DW = { lots: lots, S: S, attemptBid: attemptBid, attemptBuy: attemptBuy, simTick: simTick, minBid: minBid, inc: inc, committed: committed, ustatus: ustatus, closeLot: closeLot, byId: byId, openSheet: openSheet, refresh: refresh, applySkin: applySkin, currentSkin: currentSkin };
+})();
+</script>
+
+</body>
+</html>
